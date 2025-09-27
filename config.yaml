@@ -12,9 +12,9 @@ Web:
 
 
   # Web Information
-  Tab_Title: Douyin_TikTok_Download_API    # Web title | Web标题
-  Description: Douyin_TikTok_Download_API is a free open-source API service for Douyin/TikTok. It provides a simple, fast, and stable API for developers to develop applications based on Douyin/TikTok.    # Web description | Web描述
-  Favicon: https://raw.githubusercontent.com/Evil0ctal/Douyin_TikTok_Download_API/main/logo/logo192.png    # Web favicon | Web图标
+  Tab_Title: VideoCube - One-Click Batch Parser   # Web title | Web标题
+  Description: VideoCube - 专业的抖音/TikTok视频批量解析神器，一键下载无水印高清视频，简单快速，完全免费。    # Web description | Web描述
+  Favicon: https://i.imgur.com/LV8yVAX.png    # Web favicon | Web图标
 
   # Fun Configuration
   Easter_Egg: false    # Enable Easter Egg | 启用彩蛋
@@ -39,7 +39,7 @@ API:
 
   # File Configuration
   Download_Path: "./download"    # Default download directory | 默认下载目录
-  Download_File_Prefix: "douyin.wtf_"    # Default download file prefix | 默认下载文件前缀
+  Download_File_Prefix: "videocube_"    # Default download file prefix | 默认下载文件前缀
 
 
 # iOS Shortcut

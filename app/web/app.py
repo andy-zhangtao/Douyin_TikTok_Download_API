@@ -41,19 +41,35 @@ class MainView:
             session.run_js("""$('footer').remove()""")
             # 设置不允许referrer/Set no referrer
             session.run_js("""$('head').append('<meta name=referrer content=no-referrer>');""")
+            # 设置背景颜色/Set background color
+            session.run_js("""
+                $('head').append('<style>body { background-color: #faf5cf !important; } .pywebio-content { background-color: #faf5cf !important; } .container, .container-fluid { background-color: #faf5cf !important; } #pywebio-scope-ROOT { background-color: #faf5cf !important; } div { background-color: inherit !important; }</style>');
+            """)
             # 设置标题/Set title
             title = self.utils.t("视频魔方 - 一键批量解析神器",
                                  "VideoCube - One-Click Batch Parser")
             put_html(f"""
-                    <div align="center">
-                    <a href="/" alt="logo" ><img src="{favicon_url}" width="100"/></a>
-                    <h1 align="center">{title}</h1>
+                    <div style="text-align: center; padding: 20px 0; background: transparent; margin-bottom: 30px;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                            <a href="/" alt="logo">
+                                <img src="{favicon_url}"
+                                     style="width: 80px; height: 80px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.3s ease;"
+                                     onmouseover="this.style.transform='scale(1.1)'"
+                                     onmouseout="this.style.transform='scale(1)'"/>
+                            </a>
+                            <div style="text-align: left;">
+                                <h1 style="color: #2c3e50; margin: 0; font-size: 2.2em; font-weight: bold; text-shadow: none; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+                                    {title}
+                                </h1>
+                                <p style="color: #34495e; margin: 8px 0 0 0; font-size: 1.1em; font-weight: 400;">
+                                    {self.utils.t("简单快速 · 批量高效 · 完全免费", "Simple & Fast · Batch Processing · Completely Free")}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     """)
             # 设置导航栏/Navbar (已移除所有导航按钮)
             # put_row([]) # 导航栏已被移除
 
-            # 直接显示批量解析视频功能/Direct batch video parsing function
-            put_markdown(f"## {self.utils.t('🔍批量解析视频', '🔍Batch Parse Video')}")
-            # 直接运行批量解析视频功能
+            # 直接运行批量解析视频功能/Direct batch video parsing function
             parse_video()

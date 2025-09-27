@@ -74,12 +74,124 @@ def error_do(reason: str, value: str) -> None:
 
 
 def parse_video():
+    # 添加自定义CSS样式来美化按钮和背景
+    put_html("""
+    <style>
+    /* 设置页面背景颜色 */
+    body {
+        background-color: #faf5cf !important;
+    }
+    .pywebio-content {
+        background-color: #faf5cf !important;
+    }
+    /* 设置所有容器的背景颜色 */
+    .container, .container-fluid {
+        background-color: #faf5cf !important;
+    }
+    /* 设置表单区域的背景颜色 */
+    .form-group, .form-control {
+        background-color: #faf5cf !important;
+    }
+    /* 设置PyWebIO的主要内容区域 */
+    #pywebio-scope-ROOT {
+        background-color: #faf5cf !important;
+    }
+    /* 设置所有div容器的背景 */
+    div {
+        background-color: inherit !important;
+    }
+    /* 专门针对输入框和按钮区域 */
+    .pywebio-input-group {
+        background-color: #faf5cf !important;
+    }
+    .form-submit-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+        margin-right: 10px !important;
+    }
+    .form-submit-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    .form-reset-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .form-reset-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    /* 为表单按钮容器添加样式 */
+    .form-buttons {
+        text-align: center !important;
+        margin-top: 20px !important;
+    }
+    /* 修改PyWebIO默认按钮样式 */
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-secondary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-secondary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    /* 专门针对重置按钮的样式 */
+    button[type="reset"], input[type="reset"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    button[type="reset"]:hover, input[type="reset"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    .btn:hover {
+        transform: translateY(-2px) !important;
+    }
+    </style>
+    """)
+
     placeholder = ViewsUtils.t(
-        "批量解析请直接粘贴多个口令或链接，无需使用符号分开，支持抖音和TikTok链接混合，暂时不支持作者主页链接批量解析。",
-        "Batch parsing, please paste multiple passwords or links directly, no need to use symbols to separate, support for mixing Douyin and TikTok links, temporarily not support for author home page link batch parsing.")
+        "支持抖音、TikTok视频链接批量解析。可直接粘贴多个链接，无需分隔符。",
+        "Support batch parsing of Douyin and TikTok video links. Paste multiple links directly without separators.")
     input_data = textarea(
-        ViewsUtils.t('请将抖音或TikTok的分享口令或网址粘贴于此',
-                     "Please paste the share code or URL of [Douyin|TikTok] here"),
+        ViewsUtils.t('粘贴视频链接或分享口令',
+                     "Paste video links or share codes here"),
         type=TEXT,
         validate=valid_check,
         required=True,
