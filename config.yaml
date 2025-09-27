@@ -17,8 +17,8 @@ Web:
   Favicon: https://raw.githubusercontent.com/Evil0ctal/Douyin_TikTok_Download_API/main/logo/logo192.png    # Web favicon | Web图标
 
   # Fun Configuration
-  Easter_Egg: true    # Enable Easter Egg | 启用彩蛋
-  Live2D_Enable: true
+  Easter_Egg: false    # Enable Easter Egg | 启用彩蛋
+  Live2D_Enable: false    # Disable Live2D waifu | 禁用看板娘
   Live2D_JS: https://fastly.jsdelivr.net/gh/TikHubIO/TikHub_live2d@latest/autoload.js
 
 # API
