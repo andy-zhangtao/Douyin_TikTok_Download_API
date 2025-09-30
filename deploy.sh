@@ -154,7 +154,7 @@ update_code() {
         # 首次克隆
         log "克隆代码仓库..."
         rm -rf "$WORK_DIR"
-        git clone https://github.com/Evil0ctal/Douyin_TikTok_Download_API.git "$WORK_DIR"
+        git clone https://github.com/andy-zhangtao/Douyin_TikTok_Download_API.git "$WORK_DIR"
         cd "$WORK_DIR"
 
         if [ -n "$VERSION" ]; then
