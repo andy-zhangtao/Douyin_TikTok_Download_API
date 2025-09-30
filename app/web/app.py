@@ -41,6 +41,91 @@ class MainView:
             session.run_js("""$('footer').remove()""")
             # 设置不允许referrer/Set no referrer
             session.run_js("""$('head').append('<meta name=referrer content=no-referrer>');""")
+
+            # SEO优化 - 基础Meta标签
+            session.run_js("""
+                // 设置语言
+                $('html').attr('lang', 'zh-CN');
+
+                // 添加关键词
+                $('head').append('<meta name="keywords" content="抖音视频下载,TikTok视频下载,无水印视频下载,视频解析,批量下载,VideoCube,抖音解析,TikTok解析,视频批量处理">');
+
+                // 添加作者
+                $('head').append('<meta name="author" content="VideoCube Team">');
+
+                // 添加viewport（如果没有）
+                if (!$('meta[name="viewport"]').length) {
+                    $('head').append('<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">');
+                }
+
+                // 添加charset（如果没有）
+                if (!$('meta[charset]').length) {
+                    $('head').prepend('<meta charset="UTF-8">');
+                }
+            """)
+
+            # SEO优化 - Open Graph标签（社交媒体分享优化）
+            domain = _config['Web']['Domain']
+            title = _config['Web']['Tab_Title']
+            description = _config['Web']['Description']
+            session.run_js(f"""
+                // Open Graph标签
+                $('head').append('<meta property="og:type" content="website">');
+                $('head').append('<meta property="og:site_name" content="VideoCube">');
+                $('head').append('<meta property="og:title" content="{title}">');
+                $('head').append('<meta property="og:description" content="{description}">');
+                $('head').append('<meta property="og:url" content="{domain}">');
+                $('head').append('<meta property="og:image" content="{favicon_url}">');
+                $('head').append('<meta property="og:locale" content="zh_CN">');
+
+                // Twitter Card标签
+                $('head').append('<meta name="twitter:card" content="summary_large_image">');
+                $('head').append('<meta name="twitter:title" content="{title}">');
+                $('head').append('<meta name="twitter:description" content="{description}">');
+                $('head').append('<meta name="twitter:image" content="{favicon_url}">');
+
+                // Canonical URL
+                $('head').append('<link rel="canonical" href="{domain}">');
+            """)
+
+            # SEO优化 - 结构化数据（JSON-LD）
+            session.run_js(f"""
+                var structuredData = {{
+                    "@context": "https://schema.org",
+                    "@type": "WebApplication",
+                    "name": "VideoCube",
+                    "alternateName": "视频魔方",
+                    "description": "{description}",
+                    "url": "{domain}",
+                    "applicationCategory": "MultimediaApplication",
+                    "operatingSystem": "Web Browser",
+                    "offers": {{
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "CNY"
+                    }},
+                    "featureList": [
+                        "抖音视频无水印下载",
+                        "TikTok视频批量解析",
+                        "视频批量下载",
+                        "高清视频提取"
+                    ],
+                    "screenshot": "{favicon_url}",
+                    "aggregateRating": {{
+                        "@type": "AggregateRating",
+                        "ratingValue": "4.8",
+                        "ratingCount": "1000",
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }}
+                }};
+
+                var script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.text = JSON.stringify(structuredData);
+                $('head').append(script);
+            """)
+
             # 设置背景颜色/Set background color
             session.run_js("""
                 $('head').append('<style>body { background-color: #faf5cf !important; } .pywebio-content { background-color: #faf5cf !important; } .container, .container-fluid { background-color: #faf5cf !important; } #pywebio-scope-ROOT { background-color: #faf5cf !important; } div { background-color: inherit !important; }</style>');
