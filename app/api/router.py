@@ -5,6 +5,7 @@ from app.api.endpoints import (
     douyin_web,
     bilibili_web,
     hybrid_parsing, ios_shortcut, download,
+    qqmusic_web,
 )
 
 router = APIRouter()
@@ -18,6 +19,9 @@ router.include_router(douyin_web.router, prefix="/douyin/web", tags=["Douyin-Web
 
 # Bilibili routers
 router.include_router(bilibili_web.router, prefix="/bilibili/web", tags=["Bilibili-Web-API"])
+
+# QQMusic routers
+router.include_router(qqmusic_web.router, prefix="/qqmusic", tags=["QQMusic-API"])
 
 # Hybrid routers
 router.include_router(hybrid_parsing.router, prefix="/hybrid", tags=["Hybrid-API"])

@@ -7,6 +7,7 @@ from pywebio.input import *
 from pywebio.output import *
 
 from app.web.views.ParseVideo import parse_video
+from app.web.views.QQMusicParser import qqmusic_parser
 # PyWebIO的各个视图/Views of PyWebIO
 from app.web.views.ViewsUtils import ViewsUtils
 
@@ -153,8 +154,51 @@ class MainView:
                         </div>
                     </div>
                     """)
-            # 设置导航栏/Navbar (已移除所有导航按钮)
-            # put_row([]) # 导航栏已被移除
+            # 添加功能选择按钮
+            put_html("""
+            <style>
+            .function-selector {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                margin: 20px 0 30px 0;
+                flex-wrap: wrap;
+            }
+            .function-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+                border-radius: 25px;
+                padding: 12px 30px;
+                color: white;
+                font-weight: 600;
+                font-size: 16px;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            .function-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            }
+            .function-btn.active {
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.8);
+            }
+            </style>
+            """)
 
-            # 直接运行批量解析视频功能/Direct batch video parsing function
-            parse_video()
+            # 功能选择
+            function_choice = select(
+                ViewsUtils.t("选择功能", "Select Function"),
+                options=[
+                    (ViewsUtils.t("📹 视频解析下载", "📹 Video Parser"), "video"),
+                    (ViewsUtils.t("🎵 QQ音乐下载", "🎵 QQ Music Download"), "qqmusic")
+                ],
+                value="video"
+            )
+
+            # 根据选择显示不同功能
+            if function_choice == "video":
+                parse_video()
+            elif function_choice == "qqmusic":
+                qqmusic_parser()

@@ -82,6 +82,10 @@ tags_metadata = [
         "description": "**(Bilibili-Web-API数据接口/Bilibili-Web-API data endpoints)**",
     },
     {
+        "name": "QQMusic-API",
+        "description": "**(QQ音乐数据接口/QQMusic-API data endpoints)**",
+    },
+    {
         "name": "iOS-Shortcut",
         "description": "**(iOS快捷指令数据接口/iOS-Shortcut data endpoints)**",
     },
