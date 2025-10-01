@@ -16,6 +16,17 @@ SERVICE_PORT="9000"
 DEFAULT_BRANCH="main"
 VERSION=""  # 可选：指定 git tag 或 commit hash
 
+# 外置配置文件目录
+CONFIG_EXTERNAL_DIR="/opt/configs/douyin-tiktok-api"
+# 需要保护的配置文件列表（相对于项目根目录）
+CONFIG_FILES=(
+    "config.yaml"
+    "crawlers/douyin/web/config.yaml"
+    "crawlers/tiktok/web/config.yaml"
+    "crawlers/tiktok/app/config.yaml"
+    "crawlers/bilibili/web/config.yaml"
+)
+
 # 颜色输出
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -49,14 +60,21 @@ show_help() {
     -u, --user USER         指定运行服务的用户 (默认: ${SERVICE_USER})
     -d, --dir DIR           指定安装目录 (默认: ${WORK_DIR})
     -p, --port PORT         指定服务端口 (默认: ${SERVICE_PORT})
+    -c, --config-dir DIR    指定外置配置目录 (默认: ${CONFIG_EXTERNAL_DIR})
     --install               执行完整安装 (包括创建用户、安装依赖等)
     --update                仅更新代码和重启服务
     --service-only          仅生成systemd服务文件
+    --init-config           初始化外置配置（首次部署时使用）
 
 示例:
-    $0 --install --branch main --port 9000
+    # 首次部署（完整安装+初始化配置）
+    $0 --install --init-config --branch main --port 9000
+
+    # 更新代码（保护配置文件）
     $0 --update --version v1.2.3
     $0 --update --version abc123ef
+
+    # 仅生成服务文件
     $0 --service-only --user myuser --port 8080
 EOF
 }
@@ -66,6 +84,7 @@ BRANCH="$DEFAULT_BRANCH"
 INSTALL_MODE=false
 UPDATE_MODE=false
 SERVICE_ONLY=false
+INIT_CONFIG=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -94,6 +113,10 @@ while [[ $# -gt 0 ]]; do
             SERVICE_PORT="$2"
             shift 2
             ;;
+        -c|--config-dir)
+            CONFIG_EXTERNAL_DIR="$2"
+            shift 2
+            ;;
         --install)
             INSTALL_MODE=true
             shift
@@ -104,6 +127,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --service-only)
             SERVICE_ONLY=true
+            shift
+            ;;
+        --init-config)
+            INIT_CONFIG=true
             shift
             ;;
         *)
@@ -185,6 +212,74 @@ update_code() {
 
     # 设置正确的所有权
     chown -R "$SERVICE_USER:$SERVICE_USER" "$WORK_DIR"
+}
+
+# 初始化外置配置目录
+init_external_config() {
+    log "初始化外置配置目录..."
+
+    # 创建外置配置目录
+    mkdir -p "$CONFIG_EXTERNAL_DIR"
+
+    # 复制所有配置文件到外置目录（保留目录结构）
+    for config_file in "${CONFIG_FILES[@]}"; do
+        source_file="$WORK_DIR/$config_file"
+        target_file="$CONFIG_EXTERNAL_DIR/$config_file"
+
+        if [ -f "$source_file" ]; then
+            # 创建目标目录
+            target_dir=$(dirname "$target_file")
+            mkdir -p "$target_dir"
+
+            # 复制配置文件
+            cp "$source_file" "$target_file"
+            log "已复制配置文件: $config_file -> $target_file"
+        else
+            warn "配置文件不存在，跳过: $source_file"
+        fi
+    done
+
+    # 设置正确的所有权
+    chown -R "$SERVICE_USER:$SERVICE_USER" "$CONFIG_EXTERNAL_DIR"
+    chmod -R 600 "$CONFIG_EXTERNAL_DIR"
+
+    log "外置配置目录已初始化: $CONFIG_EXTERNAL_DIR"
+    log "⚠️  请编辑外置配置文件，添加Cookie等敏感信息"
+}
+
+# 链接外置配置文件到项目目录
+link_external_config() {
+    log "链接外置配置文件..."
+
+    # 检查外置配置目录是否存在
+    if [ ! -d "$CONFIG_EXTERNAL_DIR" ]; then
+        error "外置配置目录不存在: $CONFIG_EXTERNAL_DIR\n请先运行: $0 --init-config"
+    fi
+
+    # 为每个配置文件创建软链接
+    for config_file in "${CONFIG_FILES[@]}"; do
+        source_file="$CONFIG_EXTERNAL_DIR/$config_file"
+        target_file="$WORK_DIR/$config_file"
+
+        if [ -f "$source_file" ]; then
+            # 删除项目中的配置文件（如果存在）
+            if [ -f "$target_file" ] && [ ! -L "$target_file" ]; then
+                log "备份项目中的配置文件: $target_file -> $target_file.bak"
+                mv "$target_file" "$target_file.bak"
+            fi
+
+            # 删除旧的软链接
+            rm -f "$target_file"
+
+            # 创建软链接
+            ln -sf "$source_file" "$target_file"
+            log "已创建软链接: $target_file -> $source_file"
+        else
+            warn "外置配置文件不存在，跳过: $source_file"
+        fi
+    done
+
+    log "配置文件链接完成"
 }
 
 # 设置Python环境
@@ -278,6 +373,7 @@ ${GREEN}=== 部署完成 ===${NC}
 服务名称: $SERVICE_NAME
 运行用户: $SERVICE_USER
 工作目录: $WORK_DIR
+外置配置: $CONFIG_EXTERNAL_DIR
 监听端口: $SERVICE_PORT
 部署分支: $BRANCH
 
@@ -287,6 +383,12 @@ ${GREEN}=== 部署完成 ===${NC}
   停止服务: systemctl stop $SERVICE_NAME
   重启服务: systemctl restart $SERVICE_NAME
   查看日志: journalctl -u $SERVICE_NAME -f
+
+配置文件管理:
+  编辑配置: 修改 $CONFIG_EXTERNAL_DIR 下的配置文件
+  配置列表: ls -la $CONFIG_EXTERNAL_DIR
+
+  ${YELLOW}⚠️  配置文件通过软链接管理，更新代码不会覆盖配置${NC}
 
 访问地址: http://localhost:$SERVICE_PORT
 
@@ -316,6 +418,21 @@ main() {
         check_dependencies
         create_user
         update_code
+
+        # 如果指定了初始化配置，则执行配置初始化和链接
+        if [[ "$INIT_CONFIG" == true ]]; then
+            init_external_config
+            link_external_config
+        else
+            # 否则只链接已存在的外置配置
+            if [ -d "$CONFIG_EXTERNAL_DIR" ]; then
+                link_external_config
+            else
+                warn "未找到外置配置目录: $CONFIG_EXTERNAL_DIR"
+                warn "如需使用外置配置，请运行: $0 --init-config"
+            fi
+        fi
+
         setup_python_env
         create_systemd_service
         start_service
@@ -324,6 +441,15 @@ main() {
     elif [[ "$UPDATE_MODE" == true ]]; then
         # 仅更新
         update_code
+
+        # 更新后重新链接外置配置（保护配置不被覆盖）
+        if [ -d "$CONFIG_EXTERNAL_DIR" ]; then
+            link_external_config
+        else
+            warn "未找到外置配置目录: $CONFIG_EXTERNAL_DIR"
+            warn "配置文件可能已被覆盖，建议运行: $0 --init-config"
+        fi
+
         setup_python_env  # 可能有新的依赖
         systemctl restart "$SERVICE_NAME"
         log "代码更新完成，服务已重启"
@@ -334,6 +460,21 @@ main() {
         check_dependencies
         create_user
         update_code
+
+        # 如果指定了初始化配置，则执行配置初始化和链接
+        if [[ "$INIT_CONFIG" == true ]]; then
+            init_external_config
+            link_external_config
+        else
+            # 否则只链接已存在的外置配置
+            if [ -d "$CONFIG_EXTERNAL_DIR" ]; then
+                link_external_config
+            else
+                warn "未找到外置配置目录: $CONFIG_EXTERNAL_DIR"
+                warn "如需使用外置配置，请运行: $0 --init-config"
+            fi
+        fi
+
         setup_python_env
         create_systemd_service
         start_service
