@@ -167,6 +167,9 @@ async def help_page():
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta name="description" content="详细的QQ音乐Cookie获取与使用教程，支持Chrome、Edge等浏览器，包含完整的图文步骤说明，帮助您轻松下载QQ音乐歌曲。">
+            <meta name="keywords" content="QQ音乐Cookie,QQ音乐下载,Cookie获取,EditThisCookie,音乐下载教程,QQ音乐解析,Netscape Cookie">
+            <meta name="author" content="VideoCube Team">
             <title>QQ音乐Cookie获取与使用教程 - VideoCube</title>
             <style>
                 body {{
