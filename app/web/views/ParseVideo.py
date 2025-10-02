@@ -26,25 +26,34 @@ def valid_check(input_data: str):
     # 总共找到的链接数量/Total number of links found
     total_urls = len(url_list)
     if total_urls == 0:
-        warn_info = ViewsUtils.t('没有检测到有效的链接，请检查输入的内容是否正确。',
-                                 'No valid link detected, please check if the input content is correct.')
+        # 统一更清晰的校验文案
+        warn_info = ViewsUtils.t('未检测到有效链接，请检查输入内容是否正确。',
+                                 'No valid links detected. Please check your input.')
         return warn_info
     else:
         # 最大接受提交URL的数量/Maximum number of URLs accepted
         max_urls = config['Web']['Max_Take_URLs']
         if total_urls > int(max_urls):
-            warn_info = ViewsUtils.t(f'输入的链接太多啦，当前只会处理输入的前{max_urls}个链接！',
-                                     f'Too many links input, only the first {max_urls} links will be processed!')
+            warn_info = ViewsUtils.t(
+                f'输入链接过多，当前仅处理前 {max_urls} 条。',
+                f'Too many links; only the first {max_urls} will be processed.'
+            )
             return warn_info
 
 
 # 错误处理/Error handling
 def error_do(reason: str, value: str) -> None:
-    # 输出一个毫无用处的信息
+    # 输出分隔线
     put_html("<hr>")
-    put_error(
-        ViewsUtils.t("发生了一个错误，程序将跳过这个输入值，继续处理下一个输入值。",
-                     "An error occurred, the program will skip this input value and continue to process the next input value."))
+    # 自定义可读性更好的错误提示（深色文字以适配浅色背景）
+    put_html(
+        f"""
+        <div class=\"vc-alert\">
+            <div class=\"vc-alert-title\">⚠ {ViewsUtils.t('解析出错', 'Error occurred')}</div>
+            <div class=\"vc-alert-desc\">{ViewsUtils.t('已跳过该条，继续处理下一条。', 'Skipping this entry and continuing.')}</div>
+        </div>
+        """
+    )
     put_html(f"<h3>⚠{ViewsUtils.t('详情', 'Details')}</h3>")
     put_table([
         [
@@ -56,30 +65,192 @@ def error_do(reason: str, value: str) -> None:
             value
         ]
     ])
-    put_markdown(ViewsUtils.t('> 可能的原因:', '> Possible reasons:'))
-    put_markdown(ViewsUtils.t("- 视频已被删除或者链接不正确。",
-                              "- The video has been deleted or the link is incorrect."))
-    put_markdown(ViewsUtils.t("- 接口风控，请求过于频繁。",
-                              "- Interface risk control, request too frequent.")),
-    put_markdown(ViewsUtils.t("- 没有使用有效的Cookie，如果你部署后没有替换相应的Cookie，可能会导致解析失败。",
-                              "- No valid Cookie is used. If you do not replace the corresponding Cookie after deployment, it may cause parsing failure."))
-    put_markdown(ViewsUtils.t("> 寻求帮助:", "> Seek help:"))
-    put_markdown(ViewsUtils.t(
-        "- 你可以尝试再次解析，或者尝试自行部署项目，然后替换`./app/crawlers/平台文件夹/config.yaml`中的`cookie`值。",
-        "- You can try to parse again, or try to deploy the project by yourself, and then replace the `cookie` value in `./app/crawlers/platform folder/config.yaml`."))
-
-    put_markdown(
-        "- GitHub Issue: [Evil0ctal/Douyin_TikTok_Download_API](https://github.com/Evil0ctal/Douyin_TikTok_Download_API/issues)")
+    # 精简错误提示，不再输出额外的引导与链接
     put_html("<hr>")
 
 
 def parse_video():
+    # 添加自定义CSS样式来美化按钮和背景
+    put_html("""
+    <style>
+    :root {
+        /* 主题与颜色变量 */
+        --vc-bg: #faf5cf;
+        --vc-primary: #667eea;          /* 与按钮渐变主色一致 */
+        --vc-primary-2: #764ba2;        /* 渐变副色 */
+        --vc-info-text: #163a5f;
+        --vc-info-bg: #e7f3ff;
+        --vc-info-border: #b6daff;
+        --vc-info-accent: #1c7ed6;
+        --vc-error-text: #5c2b29;
+        --vc-error-bg: #fdecea;
+        --vc-error-border: #f5c2c7;
+        --vc-error-accent: #e03131;
+        --vc-neutral-text: #1d1d1f;
+        --vc-neutral-bg: #f6f6f7;
+        --vc-neutral-border: #e5e5ea;
+        --vc-success-text: #1e4620;      /* 成功提示文字色 */
+        --vc-success-bg: #e6f4ea;        /* 成功提示背景色 */
+        --vc-success-border: #b7e2c1;    /* 成功提示边框色 */
+        --vc-success-accent: #2f9e44;    /* 成功提示左侧色条 */
+    }
+    /* 设置页面背景颜色 */
+    body {
+        background-color: var(--vc-bg) !important;
+    }
+    .pywebio-content {
+        background-color: var(--vc-bg) !important;
+    }
+    /* 设置所有容器的背景颜色 */
+    .container, .container-fluid {
+        background-color: var(--vc-bg) !important;
+    }
+    /* 设置表单区域的背景颜色 */
+    .form-group, .form-control {
+        background-color: var(--vc-bg) !important;
+    }
+    /* 设置PyWebIO的主要内容区域 */
+    #pywebio-scope-ROOT {
+        background-color: var(--vc-bg) !important;
+    }
+    /* 设置所有div容器的背景 */
+    div {
+        background-color: inherit !important;
+    }
+    /* 专门针对输入框和按钮区域 */
+    .pywebio-input-group {
+        background-color: var(--vc-bg) !important;
+    }
+    .form-submit-btn {
+        background: linear-gradient(135deg, var(--vc-primary) 0%, var(--vc-primary-2) 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+        margin-right: 10px !important;
+    }
+    .form-submit-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    .form-reset-btn {
+        background: linear-gradient(135deg, var(--vc-primary) 0%, var(--vc-primary-2) 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .form-reset-btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    /* 为表单按钮容器添加样式 */
+    .form-buttons {
+        text-align: center !important;
+        margin-top: 20px !important;
+    }
+    /* 修改PyWebIO默认按钮样式 */
+    .btn-primary {
+        background: linear-gradient(135deg, var(--vc-primary) 0%, var(--vc-primary-2) 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-secondary {
+        background: linear-gradient(135deg, var(--vc-primary) 0%, var(--vc-primary-2) 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    .btn-secondary:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    /* 专门针对重置按钮的样式 */
+    button[type="reset"], input[type="reset"] {
+        background: linear-gradient(135deg, var(--vc-primary) 0%, var(--vc-primary-2) 100%) !important;
+        border: none !important;
+        border-radius: 25px !important;
+        padding: 12px 30px !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+        transition: all 0.3s ease !important;
+    }
+    button[type="reset"]:hover, input[type="reset"]:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
+    }
+    .btn:hover {
+        transform: translateY(-2px) !important;
+    }
+    /* 自定义错误提示样式（深色文字+浅色背景） */
+    .vc-alert {
+        color: var(--vc-error-text) !important;
+        background: var(--vc-error-bg) !important;
+        border: 1px solid var(--vc-error-border) !important;
+        border-left: 4px solid var(--vc-error-accent) !important;
+        padding: 12px 14px !important;
+        border-radius: 8px !important;
+        margin: 10px 0 !important;
+    }
+    .vc-alert-title { font-weight: 700 !important; margin-bottom: 4px !important; }
+    .vc-alert-desc  { font-weight: 400 !important; }
+    /* 成功提示样式 */
+    .vc-success {
+        color: var(--vc-success-text) !important;
+        background: var(--vc-success-bg) !important;
+        border: 1px solid var(--vc-success-border) !important;
+        border-left: 4px solid var(--vc-success-accent) !important;
+        padding: 12px 14px !important;
+        border-radius: 8px !important;
+        margin: 10px 0 !important;
+    }
+    .vc-success-title { font-weight: 700 !important; }
+    /* 兜底：覆盖 PyWebIO/Bootstrap 内置警告颜色，防止白字不辨识 */
+    .alert-danger, .alert-warning, .alert-info {
+        color: var(--vc-neutral-text) !important;
+        background-color: var(--vc-neutral-bg) !important;
+        border-color: var(--vc-neutral-border) !important;
+    }
+    /* 信息提示（深蓝文字+浅蓝背景） */
+    .vc-info {
+        color: var(--vc-info-text) !important;
+        background: var(--vc-info-bg) !important;
+        border: 1px solid var(--vc-info-border) !important;
+        border-left: 4px solid var(--vc-info-accent) !important;
+        padding: 12px 14px !important;
+        border-radius: 8px !important;
+        margin: 10px 0 !important;
+        white-space: pre-line !important;       /* 处理 \n 换行 */
+    }
+    .vc-info-title { font-weight: 700 !important; margin-bottom: 4px !important; }
+    .vc-info-desc  { font-weight: 400 !important; }
+    </style>
+    """)
+
     placeholder = ViewsUtils.t(
-        "批量解析请直接粘贴多个口令或链接，无需使用符号分开，支持抖音和TikTok链接混合，暂时不支持作者主页链接批量解析。",
-        "Batch parsing, please paste multiple passwords or links directly, no need to use symbols to separate, support for mixing Douyin and TikTok links, temporarily not support for author home page link batch parsing.")
+        "支持抖音、TikTok视频链接批量解析。可直接粘贴多个链接，无需分隔符。",
+        "Support batch parsing of Douyin and TikTok video links. Paste multiple links directly without separators.")
     input_data = textarea(
-        ViewsUtils.t('请将抖音或TikTok的分享口令或网址粘贴于此',
-                     "Please paste the share code or URL of [Douyin|TikTok] here"),
+        ViewsUtils.t('粘贴视频链接或分享口令',
+                     "Paste video links or share codes here"),
         type=TEXT,
         validate=valid_check,
         required=True,
@@ -101,8 +272,18 @@ def parse_video():
     with use_scope('loading_text'):
         # 输出一个分行符
         put_row([put_html('<br>')])
-        put_warning(ViewsUtils.t('Server酱正收到你输入的链接啦！(◍•ᴗ•◍)\n正在努力处理中，请稍等片刻...',
-                                 'ServerChan is receiving your input link! (◍•ᴗ•◍)\nEfforts are being made, please wait a moment...'))
+        title = ViewsUtils.t('已收到链接，正在处理',
+                             'Links received, processing')
+        desc  = ViewsUtils.t('请稍候…',
+                             'Please wait…')
+        put_html(
+            f"""
+            <div class=\"vc-info\">
+                <div class=\"vc-info-title\">{title}</div>
+                <div class=\"vc-info-desc\">{desc}</div>
+            </div>
+            """
+        )
     # 结果页标题
     put_scope('result_title')
     # 遍历链接列表
@@ -201,38 +382,61 @@ def parse_video():
     # 全部解析完成跳出for循环/All parsing completed, break out of for loop
     with use_scope('result_title'):
         put_row([put_html('<br>')])
-        put_markdown(ViewsUtils.t('## 📝解析结果:', '## 📝Parsing results:'))
+        put_markdown(ViewsUtils.t('## 📝结果概览:', '## 📝Results Overview:'))
         put_row([put_html('<br>')])
     with use_scope('result'):
         # 清除进度条
         clear('loading_text')
         # 滚动至result
         scroll_to('result')
-        # for循环结束，向网页输出成功提醒
-        put_success(ViewsUtils.t('解析完成啦 ♪(･ω･)ﾉ\n请查看以下统计信息，如果觉得有用的话请在GitHub上帮我点一个Star吧！',
-                                 'Parsing completed ♪(･ω･)ﾉ\nPlease check the following statistics, and if you think it\'s useful, please help me click a Star on GitHub!'))
-        # 将成功，失败以及总数量显示出来并且显示为代码方便复制
-        put_markdown(
-            f'**{ViewsUtils.t("成功", "Success")}:** {success_count} **{ViewsUtils.t("失败", "Failed")}:** {failed_count} **{ViewsUtils.t("总数量", "Total")}:** {success_count + failed_count}')
-        # 成功列表
-        if success_count != url_count:
+        # for循环结束，向网页输出成功提醒（使用主题色的成功提示样式）
+        success_title = ViewsUtils.t('解析完成', 'Parsing completed')
+        put_html(f"""
+            <div class=\"vc-success\">
+                <div class=\"vc-success-title\">{success_title}</div>
+            </div>
+        """)
+        # 以表格展示最终结果概览
+        put_table([
+            [ViewsUtils.t('指标', 'Metric'), ViewsUtils.t('数值', 'Value')],
+            [ViewsUtils.t('成功', 'Success'), str(success_count)],
+            [ViewsUtils.t('失败', 'Failed'), str(failed_count)],
+            [ViewsUtils.t('总数量', 'Total'), str(success_count + failed_count)],
+        ])
+        # 成功列表（以表格展示）
+        if len(success_list) > 0:
+            rows = [[ViewsUtils.t('序号', '#'), ViewsUtils.t('链接', 'URL')]]
+            for i, u in enumerate(success_list, start=1):
+                rows.append([str(i), put_link(u, u, new_window=True)])
+            put_html('<br>')
             put_markdown(f'**{ViewsUtils.t("成功列表", "Success list")}:**')
-            put_code('\n'.join(success_list))
-        # 失败列表
+            put_table(rows)
+        # 失败列表（以表格展示）
         if failed_count > 0:
+            rows = [[ViewsUtils.t('序号', '#'), ViewsUtils.t('链接', 'URL')]]
+            for i, u in enumerate(failed_list, start=1):
+                rows.append([str(i), put_link(u, u, new_window=True)])
+            put_html('<br>')
             put_markdown(f'**{ViewsUtils.t("失败列表", "Failed list")}:**')
-            put_code('\n'.join(failed_list))
-        # 将url_lists显示为代码方便复制
+            put_table(rows)
+        # 所有输入链接（以表格展示）
+        all_rows = [[ViewsUtils.t('序号', '#'), ViewsUtils.t('链接', 'URL')]]
+        for i, u in enumerate(url_lists, start=1):
+            all_rows.append([str(i), put_link(u, u, new_window=True)])
+        put_html('<br>')
         put_markdown(ViewsUtils.t('**以下是您输入的所有链接：**', '**The following are all the links you entered:**'))
-        put_code('\n'.join(url_lists))
+        put_table(all_rows)
         # 解析结束时间
         end = time.time()
         # 计算耗时,保留两位小数
         time_consuming = round(end - start, 2)
         # 显示耗时
-        put_markdown(f"**{ViewsUtils.t('耗时', 'Time consuming')}:** {time_consuming}s")
+        put_table([
+            [ViewsUtils.t('指标', 'Metric'), ViewsUtils.t('数值', 'Value')],
+            [ViewsUtils.t('耗时', 'Time'), f'{time_consuming}s']
+        ])
         # 放置一个按钮，点击后跳转到顶部
         put_button(ViewsUtils.t('回到顶部', 'Back to top'), onclick=lambda: scroll_to('1'), color='success',
                    outline=True)
-        # 返回主页链接
-        put_link(ViewsUtils.t('再来一波 (つ´ω`)つ', 'Another wave (つ´ω`)つ'), '/')
+        # 返回主页链接（替换文案）
+        put_link(ViewsUtils.t('返回首页', 'Back to home'), '/')

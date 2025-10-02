@@ -36,6 +36,7 @@
 # FastAPI APP
 import uvicorn
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
 from app.api.router import router as api_router
 
 # PyWebIO APP
@@ -80,6 +81,10 @@ tags_metadata = [
     {
         "name": "Bilibili-Web-API",
         "description": "**(Bilibili-Web-API数据接口/Bilibili-Web-API data endpoints)**",
+    },
+    {
+        "name": "QQMusic-API",
+        "description": "**(QQ音乐数据接口/QQMusic-API data endpoints)**",
     },
     {
         "name": "iOS-Shortcut",
@@ -137,6 +142,23 @@ app = FastAPI(
 
 # API router
 app.include_router(api_router, prefix="/api")
+
+# SEO文件路由
+@app.get("/robots.txt", include_in_schema=False)
+async def robots():
+    """返回robots.txt文件"""
+    robots_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'robots.txt')
+    if os.path.exists(robots_path):
+        return FileResponse(robots_path, media_type="text/plain")
+    return FileResponse(path=robots_path, status_code=404)
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap():
+    """返回sitemap.xml文件"""
+    sitemap_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'sitemap.xml')
+    if os.path.exists(sitemap_path):
+        return FileResponse(sitemap_path, media_type="application/xml")
+    return FileResponse(path=sitemap_path, status_code=404)
 
 # PyWebIO APP
 if config['Web']['PyWebIO_Enable']:

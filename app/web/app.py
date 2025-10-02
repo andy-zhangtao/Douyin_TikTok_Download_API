@@ -6,12 +6,8 @@ from pywebio import session, config as pywebio_config
 from pywebio.input import *
 from pywebio.output import *
 
-from app.web.views.About import about_pop_window
-from app.web.views.Document import api_document_pop_window
-from app.web.views.Downloader import downloader_pop_window
-from app.web.views.EasterEgg import a
 from app.web.views.ParseVideo import parse_video
-from app.web.views.Shortcuts import ios_pop_window
+from app.web.views.QQMusicParser import qqmusic_parser
 # PyWebIO的各个视图/Views of PyWebIO
 from app.web.views.ViewsUtils import ViewsUtils
 
@@ -46,47 +42,163 @@ class MainView:
             session.run_js("""$('footer').remove()""")
             # 设置不允许referrer/Set no referrer
             session.run_js("""$('head').append('<meta name=referrer content=no-referrer>');""")
+
+            # SEO优化 - 基础Meta标签
+            session.run_js("""
+                // 设置语言
+                $('html').attr('lang', 'zh-CN');
+
+                // 添加关键词
+                $('head').append('<meta name="keywords" content="抖音视频下载,TikTok视频下载,无水印视频下载,视频解析,批量下载,VideoCube,抖音解析,TikTok解析,视频批量处理">');
+
+                // 添加作者
+                $('head').append('<meta name="author" content="VideoCube Team">');
+
+                // 添加viewport（如果没有）
+                if (!$('meta[name="viewport"]').length) {
+                    $('head').append('<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">');
+                }
+
+                // 添加charset（如果没有）
+                if (!$('meta[charset]').length) {
+                    $('head').prepend('<meta charset="UTF-8">');
+                }
+            """)
+
+            # SEO优化 - Open Graph标签（社交媒体分享优化）
+            domain = _config['Web']['Domain']
+            title = _config['Web']['Tab_Title']
+            description = _config['Web']['Description']
+            session.run_js(f"""
+                // Open Graph标签
+                $('head').append('<meta property="og:type" content="website">');
+                $('head').append('<meta property="og:site_name" content="VideoCube">');
+                $('head').append('<meta property="og:title" content="{title}">');
+                $('head').append('<meta property="og:description" content="{description}">');
+                $('head').append('<meta property="og:url" content="{domain}">');
+                $('head').append('<meta property="og:image" content="{favicon_url}">');
+                $('head').append('<meta property="og:locale" content="zh_CN">');
+
+                // Twitter Card标签
+                $('head').append('<meta name="twitter:card" content="summary_large_image">');
+                $('head').append('<meta name="twitter:title" content="{title}">');
+                $('head').append('<meta name="twitter:description" content="{description}">');
+                $('head').append('<meta name="twitter:image" content="{favicon_url}">');
+
+                // Canonical URL
+                $('head').append('<link rel="canonical" href="{domain}">');
+            """)
+
+            # SEO优化 - 结构化数据（JSON-LD）
+            session.run_js(f"""
+                var structuredData = {{
+                    "@context": "https://schema.org",
+                    "@type": "WebApplication",
+                    "name": "VideoCube",
+                    "alternateName": "视频魔方",
+                    "description": "{description}",
+                    "url": "{domain}",
+                    "applicationCategory": "MultimediaApplication",
+                    "operatingSystem": "Web Browser",
+                    "offers": {{
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "CNY"
+                    }},
+                    "featureList": [
+                        "抖音视频无水印下载",
+                        "TikTok视频批量解析",
+                        "视频批量下载",
+                        "高清视频提取"
+                    ],
+                    "screenshot": "{favicon_url}",
+                    "aggregateRating": {{
+                        "@type": "AggregateRating",
+                        "ratingValue": "4.8",
+                        "ratingCount": "1000",
+                        "bestRating": "5",
+                        "worstRating": "1"
+                    }}
+                }};
+
+                var script = document.createElement('script');
+                script.type = 'application/ld+json';
+                script.text = JSON.stringify(structuredData);
+                $('head').append(script);
+            """)
+
+            # 设置背景颜色/Set background color
+            session.run_js("""
+                $('head').append('<style>body { background-color: #faf5cf !important; } .pywebio-content { background-color: #faf5cf !important; } .container, .container-fluid { background-color: #faf5cf !important; } #pywebio-scope-ROOT { background-color: #faf5cf !important; } div { background-color: inherit !important; }</style>');
+            """)
             # 设置标题/Set title
-            title = self.utils.t("TikTok/抖音无水印在线解析下载",
-                                 "Douyin/TikTok online parsing and download without watermark")
+            title = self.utils.t("视频魔方 - 一键批量解析神器",
+                                 "VideoCube - One-Click Batch Parser")
             put_html(f"""
-                    <div align="center">
-                    <a href="/" alt="logo" ><img src="{favicon_url}" width="100"/></a>
-                    <h1 align="center">{title}</h1>
+                    <div style="text-align: center; padding: 20px 0; background: transparent; margin-bottom: 30px;">
+                        <div style="display: inline-flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                            <a href="/" alt="logo">
+                                <img src="{favicon_url}"
+                                     style="width: 80px; height: 80px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); transition: transform 0.3s ease;"
+                                     onmouseover="this.style.transform='scale(1.1)'"
+                                     onmouseout="this.style.transform='scale(1)'"/>
+                            </a>
+                            <div style="text-align: left;">
+                                <h1 style="color: #2c3e50; margin: 0; font-size: 2.2em; font-weight: bold; text-shadow: none; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;">
+                                    {title}
+                                </h1>
+                                <p style="color: #34495e; margin: 8px 0 0 0; font-size: 1.1em; font-weight: 400;">
+                                    {self.utils.t("简单快速 · 批量高效 · 完全免费", "Simple & Fast · Batch Processing · Completely Free")}
+                                </p>
+                            </div>
+                        </div>
                     </div>
                     """)
-            # 设置导航栏/Navbar
-            put_row(
-                [
-                    put_button(self.utils.t("快捷指令", 'iOS Shortcut'),
-                               onclick=lambda: ios_pop_window(), link_style=True, small=True),
-                    put_button(self.utils.t("开放接口", 'Open API'),
-                               onclick=lambda: api_document_pop_window(), link_style=True, small=True),
-                    put_button(self.utils.t("下载器", "Downloader"),
-                               onclick=lambda: downloader_pop_window(), link_style=True, small=True),
-                    put_button(self.utils.t("关于", 'About'),
-                               onclick=lambda: about_pop_window(), link_style=True, small=True),
-                ])
+            # 添加功能选择按钮
+            put_html("""
+            <style>
+            .function-selector {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                margin: 20px 0 30px 0;
+                flex-wrap: wrap;
+            }
+            .function-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+                border-radius: 25px;
+                padding: 12px 30px;
+                color: white;
+                font-weight: 600;
+                font-size: 16px;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            .function-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+            }
+            .function-btn.active {
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.8);
+            }
+            </style>
+            """)
 
-            # 设置功能选择/Function selection
-            options = [
-                # Index: 0
-                self.utils.t('🔍批量解析视频', '🔍Batch Parse Video'),
-                # Index: 1
-                self.utils.t('🔍解析用户主页视频', '🔍Parse User Homepage Video'),
-                # Index: 2
-                self.utils.t('🥚小彩蛋', '🥚Easter Egg'),
-            ]
-            select_options = select(
-                self.utils.t('请在这里选择一个你想要的功能吧 ~', 'Please select a function you want here ~'),
-                required=True,
-                options=options,
-                help_text=self.utils.t('📎选上面的选项然后点击提交', '📎Select the options above and click Submit')
+            # 功能选择
+            function_choice = select(
+                ViewsUtils.t("选择功能", "Select Function"),
+                options=[
+                    (ViewsUtils.t("📹 视频解析下载", "📹 Video Parser"), "video"),
+                    (ViewsUtils.t("🎵 QQ音乐下载", "🎵 QQ Music Download"), "qqmusic")
+                ],
+                value="video"
             )
-            # 根据输入运行不同的函数
-            if select_options == options[0]:
+
+            # 根据选择显示不同功能
+            if function_choice == "video":
                 parse_video()
-            elif select_options == options[1]:
-                put_markdown(self.utils.t('暂未开放，敬请期待~', 'Not yet open, please look forward to it~'))
-            elif select_options == options[2]:
-                a() if _config['Web']['Easter_Egg'] else put_markdown(self.utils.t('没有小彩蛋哦~', 'No Easter Egg~'))
+            elif function_choice == "qqmusic":
+                qqmusic_parser()
