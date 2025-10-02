@@ -345,6 +345,34 @@ async def index():
             @keyframes spin {
                 to { transform: rotate(360deg); }
             }
+
+            .help-link-container {
+                text-align: center;
+                margin: 25px 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+                border-radius: 12px;
+                border: 2px solid #667eea;
+            }
+
+            .help-link {
+                display: inline-block;
+                font-size: 1.1em;
+                font-weight: 600;
+                color: #667eea;
+                text-decoration: none;
+                padding: 12px 25px;
+                background: white;
+                border-radius: 25px;
+                transition: all 0.3s;
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+            }
+
+            .help-link:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+                color: #764ba2;
+            }
         </style>
     </head>
     <body>
@@ -352,8 +380,14 @@ async def index():
             <h1>🎵 QQ音乐下载器</h1>
             <p class="subtitle">支持单曲和歌单批量下载</p>
 
+            <div class="help-link-container">
+                <a href="https://github.com/andy-zhangtao/Douyin_TikTok_Download_API/blob/docs/qqmusic-cookie-guide/docs/qqmusic-cookie-guide.md" target="_blank" class="help-link">
+                    📖 如何获取Cookie？查看完整使用教程 →
+                </a>
+            </div>
+
             <div class="info-box">
-                <strong>📌 使用说明:</strong><br/>
+                <strong>📌 快速上手:</strong><br/>
                 1. 使用Cookie导出工具从QQ音乐网站导出Cookie (Netscape格式)<br/>
                 2. 粘贴歌曲或歌单链接<br/>
                 3. 选择音频格式,点击获取下载链接
