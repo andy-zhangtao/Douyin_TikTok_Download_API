@@ -241,21 +241,57 @@ def qqmusic_parser():
     url = form_data['url']
     audio_format = form_data['format']
 
-    # 显示处理中提示
+    # 判断是否为歌单
+    is_playlist = 'playlist' in url
+
+    # 显示处理中提示（带倒计时）
     put_html('<br>')
     with use_scope('loading'):
-        put_html(f"""
-        <div class="vc-info">
-            <div style="font-weight: 700;">{ViewsUtils.t('正在处理...', 'Processing...')}</div>
-            <div style="font-weight: 400;">{ViewsUtils.t('请稍候，正在获取歌曲信息', 'Please wait, fetching song information')}</div>
-        </div>
-        """)
+        if is_playlist:
+            put_html(f"""
+            <div class="vc-info">
+                <div style="font-weight: 700;">⏰ {ViewsUtils.t('正在解析歌单...', 'Parsing playlist...')}</div>
+                <div style="font-weight: 400; margin-top: 8px;">
+                    {ViewsUtils.t('歌单解析耗时较长，请耐心等待', 'Playlist parsing takes longer, please be patient')}
+                </div>
+                <div id="countdown-timer" style="font-weight: 700; font-size: 1.2em; margin-top: 12px; color: #667eea;">
+                    ⏱️ <span id="countdown-value">300</span> {ViewsUtils.t('秒', 'seconds')}
+                </div>
+                <div style="margin-top: 8px; color: #7f8c8d; font-size: 0.9em;">
+                    💡 {ViewsUtils.t('提示：如果超时，您可以尝试重新提交（最多尝试3次）', 'Tip: If timeout, you can retry (max 3 attempts)')}
+                </div>
+            </div>
+            <script>
+            let countdown = 300;
+            const countdownInterval = setInterval(() => {{
+                countdown--;
+                const elem = document.getElementById('countdown-value');
+                if (elem) {{
+                    elem.textContent = countdown;
+                    // 倒计时小于60秒时变红色
+                    if (countdown < 60) {{
+                        document.getElementById('countdown-timer').style.color = '#e03131';
+                    }}
+                }}
+                if (countdown <= 0) {{
+                    clearInterval(countdownInterval);
+                }}
+            }}, 1000);
+            </script>
+            """)
+        else:
+            put_html(f"""
+            <div class="vc-info">
+                <div style="font-weight: 700;">{ViewsUtils.t('正在处理...', 'Processing...')}</div>
+                <div style="font-weight: 400;">{ViewsUtils.t('请稍候，正在获取歌曲信息', 'Please wait, fetching song information')}</div>
+            </div>
+            """)
 
     try:
         # 调用后端API
         api_url = f"http://127.0.0.1:{config['API']['Host_Port']}/api/qqmusic/download"
 
-        # 使用同步httpx client，设置更长的超时时间（300秒=5分钟）
+        # 使用同步httpx client，设置超时时间（300秒=5分钟）
         with httpx.Client(timeout=300.0) as client:
             response = client.post(
                 api_url,
@@ -369,11 +405,31 @@ def qqmusic_parser():
             </div>
             """)
 
+    except httpx.TimeoutException:
+        clear('loading')
+        put_html(f"""
+        <div class="vc-alert" style="background: #fff3cd; border-left-color: #ffc107; color: #856404;">
+            <div style="font-weight: 700;">⏰ {ViewsUtils.t('请求超时', 'Request Timeout')}</div>
+            <div style="font-weight: 400; margin-top: 8px;">
+                {ViewsUtils.t('歌单解析超过300秒未完成，可能是歌单过大或网络较慢', 'Parsing exceeded 300 seconds, possibly due to large playlist or slow network')}
+            </div>
+            <div style="margin-top: 12px; padding: 10px; background: white; border-radius: 6px;">
+                <div style="font-weight: 600; margin-bottom: 6px;">💡 {ViewsUtils.t('建议操作：', 'Suggested actions:')}</div>
+                <div>1️⃣ {ViewsUtils.t('再次点击「开始解析」按钮重试', 'Click the parse button again to retry')}</div>
+                <div>2️⃣ {ViewsUtils.t('如果连续3次失败，建议换个时间段或更换歌单', 'If failed 3 times, try another time or playlist')}</div>
+                <div>3️⃣ {ViewsUtils.t('尝试使用单曲链接而非大型歌单', 'Try single songs instead of large playlists')}</div>
+            </div>
+        </div>
+        """)
     except Exception as e:
         clear('loading')
+        error_msg = str(e)
         put_html(f"""
         <div class="vc-alert">
             <div style="font-weight: 700;">❌ {ViewsUtils.t('发生错误', 'Error occurred')}</div>
-            <div style="font-weight: 400;">{str(e)}</div>
+            <div style="font-weight: 400; margin-top: 8px;">{error_msg}</div>
+            <div style="margin-top: 12px; padding: 10px; background: rgba(255,255,255,0.3); border-radius: 6px; font-size: 0.9em;">
+                💡 {ViewsUtils.t('您可以尝试重新提交表单，或检查Cookie和链接是否正确', 'You can retry or check if Cookie and URL are correct')}
+            </div>
         </div>
         """)
