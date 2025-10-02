@@ -51,24 +51,25 @@ https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccc
 2. 点击右上角登录按钮
 3. 使用QQ或微信扫码登录
 
-![QQ音乐登录](https://placehold.co/800x400/667eea/white?text=QQ%E9%9F%B3%E4%B9%90%E7%99%BB%E5%BD%95)
 
 ### 步骤2：打开EditThisCookie插件
 
 1. **确保当前页面是 `y.qq.com` 域名下**
 2. 点击浏览器右上角的 **EditThisCookie** 插件图标（🍪 饼干图标）
 
-![EditThisCookie图标](https://placehold.co/400x300/667eea/white?text=EditThisCookie%E5%9B%BE%E6%A0%87)
+![](https://p.ipic.vip/55xcgb.png)
 
 ### 步骤3：导出Cookie
 
 1. 点击插件弹窗右下角的 **"导出"** 按钮（📥 图标）
 
-![导出按钮](https://placehold.co/500x400/667eea/white?text=%E7%82%B9%E5%87%BB%E5%AF%BC%E5%87%BA%E6%8C%89%E9%92%AE)
+![](https://p.ipic.vip/ynqb56.png)
+
+
 
 2. 在弹出的格式选择菜单中，选择 **"Netscape HTTP Cookie File"** 格式
 
-![选择格式](https://placehold.co/500x350/667eea/white?text=%E9%80%89%E6%8B%A9Netscape%E6%A0%BC%E5%BC%8F)
+![](https://p.ipic.vip/1n5tjh.png)
 
 3. Cookie内容会自动复制到剪贴板 ✅
 
@@ -114,7 +115,8 @@ y.qq.com	FALSE	/	FALSE	1735689600	wxuin	12345678
 ...（完整内容）
 ```
 
-![粘贴Cookie](https://placehold.co/700x300/667eea/white?text=%E7%B2%98%E8%B4%B4Cookie)
+![](https://p.ipic.vip/93qbxl.png)
+
 
 #### 2. 填写歌曲或歌单链接
 
@@ -132,7 +134,7 @@ https://y.qq.com/n/ryqq/playlist/7654321098
 1. 在QQ音乐网页版找到你想下载的歌曲/歌单
 2. 复制浏览器地址栏的URL
 
-![获取链接](https://placehold.co/700x300/667eea/white?text=%E5%A4%8D%E5%88%B6%E9%93%BE%E6%8E%A5)
+![](https://p.ipic.vip/riefec.png)
 
 #### 3. 选择音频格式
 
@@ -163,7 +165,6 @@ https://y.qq.com/n/ryqq/playlist/7654321098
 2. 浏览器会自动开始下载
 3. 下载的文件名格式：`歌曲名 - 歌手名.mp3`
 
-![下载界面](https://placehold.co/700x400/667eea/white?text=%E4%B8%8B%E8%BD%BD%E7%95%8C%E9%9D%A2)
 
 ---
 
@@ -367,7 +368,5 @@ https://y.qq.com/n/ryqq/playlist/7654321098
 <div align="center">
 
 **感谢使用本工具！**
-
-如果觉得有帮助，欢迎⭐Star支持！
 
 </div>
