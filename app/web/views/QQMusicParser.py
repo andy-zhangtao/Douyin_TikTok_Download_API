@@ -201,19 +201,17 @@ def qqmusic_parser():
         # 调用后端API
         api_url = f"http://127.0.0.1:{config['API']['Host_Port']}/api/qqmusic/download"
 
-        async def call_api():
-            async with httpx.AsyncClient(timeout=60.0) as client:
-                response = await client.post(
-                    api_url,
-                    json={
-                        'cookie': cookie,
-                        'url': url,
-                        'format': audio_format
-                    }
-                )
-                return response.json()
-
-        result = asyncio.run(call_api())
+        # 使用同步httpx client，设置更长的超时时间（300秒=5分钟）
+        with httpx.Client(timeout=300.0) as client:
+            response = client.post(
+                api_url,
+                json={
+                    'cookie': cookie,
+                    'url': url,
+                    'format': audio_format
+                }
+            )
+            result = response.json()
 
         # 清除加载提示
         clear('loading')
@@ -222,12 +220,17 @@ def qqmusic_parser():
             data = result.get('data', {})
             songs = data.get('songs', [])
             total = data.get('total', 0)
+            success = data.get('success', total)
+            failed = data.get('failed', 0)
 
-            # 显示成功提示
+            # 显示成功提示（带统计信息）
             put_html(f"""
             <div class="vc-success">
-                <div style="font-weight: 700;">✅ {ViewsUtils.t('解析成功', 'Success')}</div>
-                <div style="font-weight: 400;">{ViewsUtils.t(f'共找到 {total} 首歌曲', f'Found {total} songs')}</div>
+                <div style="font-weight: 700;">✅ {ViewsUtils.t('解析完成', 'Completed')}</div>
+                <div style="font-weight: 400;">
+                    {ViewsUtils.t(f'总计: {total} 首 | 成功: {success} 首 | 失败: {failed} 首',
+                                 f'Total: {total} | Success: {success} | Failed: {failed}')}
+                </div>
             </div>
             """)
 
