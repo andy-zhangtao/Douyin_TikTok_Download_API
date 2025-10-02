@@ -1,0 +1,32 @@
+# robots.txt for VideoCube
+# https://videocube.org
+
+User-agent: *
+Allow: /
+
+# Disallow admin or private paths
+Disallow: /admin
+Disallow: /api/
+Disallow: /_*
+
+# Crawl-delay for bots
+Crawl-delay: 1
+
+# Sitemap location
+Sitemap: https://videocube.org/sitemap.xml
+
+# Common search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: Sogou web spider
+Allow: /
+
+User-agent: 360Spider
+Allow: /
