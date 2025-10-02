@@ -13,7 +13,7 @@ gmssl==3.2.2
 h11==0.16.0
 httpcore==1.0.9
 httptools==0.6.4
-httpx==0.26.0
+httpx>=0.27.0
 idna==3.10
 importlib-resources==6.5.2
 jinja2==3.1.6
