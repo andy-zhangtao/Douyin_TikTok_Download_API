@@ -1,6 +1,7 @@
 import asyncio
 import os
 import httpx
+import json
 
 import yaml
 from pywebio.input import *
@@ -138,7 +139,60 @@ def qqmusic_parser():
         transform: translateY(-2px) !important;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5) !important;
     }
+
+    .download-status {
+        margin-top: 8px !important;
+        font-size: 0.9em !important;
+    }
     </style>
+
+    <script>
+    // 通过歌曲ID下载 - 从全局变量获取数据（避免HTML转义和特殊字符问题）
+    function downloadSongById(songId) {
+        const statusDiv = document.getElementById(songId + '_status');
+
+        // 从全局变量获取歌曲数据
+        if (!window.songData || !window.songData[songId]) {
+            statusDiv.innerHTML = '<span style="color: #e03131;">❌ 无法获取下载链接</span>';
+            return;
+        }
+
+        const songInfo = window.songData[songId];
+        const url = songInfo.url;
+        const filename = songInfo.filename;
+
+        statusDiv.innerHTML = '<span style="color: #667eea;">⏳ 正在下载...</span>';
+
+        try {
+            // 获取文件扩展名
+            const ext = url.includes('.m4a') ? '.m4a' :
+                        url.includes('.flac') ? '.flac' :
+                        url.includes('.mp3') ? '.mp3' : '.m4a';
+
+            const safeFilename = filename.replace(/[<>:"/\\\\|?*]/g, '_') + ext;
+
+            // 直接创建下载链接
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = safeFilename;
+            a.target = '_blank';  // 新窗口打开，避免当前页面跳转
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            statusDiv.innerHTML = '<span style="color: #2f9e44;">✅ 下载已触发</span>';
+
+            // 5秒后清除状态
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 5000);
+        } catch (error) {
+            console.error('下载错误:', error);
+            statusDiv.innerHTML = '<span style="color: #e03131;">❌ 触发失败: ' + error.message + '</span>';
+        }
+    }
+    </script>
     """)
 
     # 输入提示
@@ -237,6 +291,25 @@ def qqmusic_parser():
             put_html('<br>')
             put_html(f"<h3>🎵 {ViewsUtils.t('歌曲列表', 'Song List')}</h3>")
 
+            # 创建歌曲数据映射表（避免HTML转义和特殊字符问题）
+            song_data_map = {}
+            for idx, song in enumerate(songs, 1):
+                if song.get('download_url'):
+                    title = song.get('title', 'Unknown')
+                    artist = song.get('artist', 'Unknown')
+                    song_data_map[f"song_{idx}"] = {
+                        'url': song.get('download_url'),
+                        'filename': f"{title} - {artist}"
+                    }
+
+            # 将歌曲数据映射表注入到JavaScript（使用json.dumps确保正确转义）
+            song_data_json = json.dumps(song_data_map)
+            put_html(f"""
+            <script>
+            window.songData = {song_data_json};
+            </script>
+            """)
+
             # 显示每首歌曲
             for idx, song in enumerate(songs, 1):
                 title = song.get('title', 'Unknown')
@@ -253,6 +326,8 @@ def qqmusic_parser():
                     seconds = int(duration) % 60
                     duration_str = f"{minutes}:{seconds:02d}"
 
+                song_id = f"song_{idx}"
+
                 # 构建歌曲信息HTML
                 song_html = f"""
                 <div class="song-item">
@@ -265,10 +340,12 @@ def qqmusic_parser():
                 """
 
                 if download_url:
+                    # 从JavaScript全局变量获取数据，避免HTML转义和特殊字符问题
                     song_html += f"""
-                        <a href="{download_url}" target="_blank" class="download-btn">
+                        <button class="download-btn" onclick="downloadSongById('{song_id}')">
                             ⬇️ {ViewsUtils.t('下载', 'Download')}
-                        </a>
+                        </button>
+                        <div id="{song_id}_status" class="download-status"></div>
                     """
                 elif error:
                     song_html += f"""
