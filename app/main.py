@@ -36,8 +36,9 @@
 # FastAPI APP
 import uvicorn
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from app.api.router import router as api_router
+import markdown
 
 # PyWebIO APP
 from app.web.app import MainView
@@ -142,6 +143,169 @@ app = FastAPI(
 
 # API router
 app.include_router(api_router, prefix="/api")
+
+# 文档路由
+@app.get("/help", response_class=HTMLResponse, include_in_schema=False)
+async def help_page():
+    """QQ音乐Cookie获取帮助文档"""
+    doc_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'docs', 'qqmusic-cookie-guide.md')
+
+    try:
+        with open(doc_path, 'r', encoding='utf-8') as f:
+            md_content = f.read()
+
+        # 转换Markdown为HTML
+        html_body = markdown.markdown(
+            md_content,
+            extensions=['tables', 'fenced_code', 'nl2br', 'toc']
+        )
+
+        # 包装成完整HTML页面
+        html_content = f"""
+        <!DOCTYPE html>
+        <html lang="zh-CN">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>QQ音乐Cookie获取与使用教程 - VideoCube</title>
+            <style>
+                body {{
+                    font-family: 'Microsoft YaHei', 'PingFang SC', -apple-system, sans-serif;
+                    max-width: 900px;
+                    margin: 0 auto;
+                    padding: 30px 20px;
+                    line-height: 1.8;
+                    color: #333;
+                    background: #f5f5f5;
+                }}
+                .content {{
+                    background: white;
+                    padding: 40px;
+                    border-radius: 10px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }}
+                h1 {{
+                    color: #667eea;
+                    border-bottom: 3px solid #667eea;
+                    padding-bottom: 15px;
+                    margin-top: 30px;
+                }}
+                h2 {{
+                    color: #764ba2;
+                    margin-top: 35px;
+                    margin-bottom: 15px;
+                    border-left: 4px solid #667eea;
+                    padding-left: 15px;
+                }}
+                h3 {{
+                    color: #555;
+                    margin-top: 25px;
+                }}
+                h4 {{
+                    color: #666;
+                    margin-top: 20px;
+                }}
+                code {{
+                    background: #f4f4f4;
+                    padding: 3px 6px;
+                    border-radius: 3px;
+                    font-family: 'Consolas', 'Monaco', monospace;
+                    color: #e03131;
+                    font-size: 0.9em;
+                }}
+                pre {{
+                    background: #2d2d2d;
+                    color: #f8f8f2;
+                    padding: 20px;
+                    border-radius: 8px;
+                    overflow-x: auto;
+                    margin: 20px 0;
+                }}
+                pre code {{
+                    background: transparent;
+                    color: #f8f8f2;
+                    padding: 0;
+                }}
+                table {{
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin: 20px 0;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }}
+                th {{
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 12px;
+                    text-align: left;
+                }}
+                td {{
+                    padding: 12px;
+                    border-bottom: 1px solid #e0e0e0;
+                }}
+                tr:hover {{
+                    background: #f9f9f9;
+                }}
+                blockquote {{
+                    border-left: 4px solid #ffc107;
+                    background: #fff3cd;
+                    padding: 15px 20px;
+                    margin: 20px 0;
+                    color: #856404;
+                }}
+                a {{
+                    color: #667eea;
+                    text-decoration: none;
+                }}
+                a:hover {{
+                    text-decoration: underline;
+                }}
+                img {{
+                    max-width: 100%;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                    margin: 20px 0;
+                }}
+                .back-btn {{
+                    display: inline-block;
+                    margin-bottom: 20px;
+                    padding: 10px 20px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border-radius: 20px;
+                    text-decoration: none;
+                    transition: all 0.3s;
+                }}
+                .back-btn:hover {{
+                    transform: translateY(-2px);
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.5);
+                    text-decoration: none;
+                }}
+                ul, ol {{
+                    margin: 15px 0;
+                    padding-left: 30px;
+                }}
+                li {{
+                    margin: 8px 0;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="content">
+                <a href="/" class="back-btn">← 返回首页</a>
+                {html_body}
+            </div>
+        </body>
+        </html>
+        """
+
+        return HTMLResponse(content=html_content)
+
+    except FileNotFoundError:
+        return HTMLResponse(
+            content="<h1>文档未找到</h1><p>请确保文档文件存在</p>",
+            status_code=404
+        )
+
 
 # SEO文件路由
 @app.get("/robots.txt", include_in_schema=False)

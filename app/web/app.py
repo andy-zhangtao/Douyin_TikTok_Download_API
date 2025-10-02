@@ -135,7 +135,7 @@ class MainView:
             title = self.utils.t("视频魔方 - 一键批量解析神器",
                                  "VideoCube - One-Click Batch Parser")
             put_html(f"""
-                    <div style="text-align: center; padding: 20px 0; background: transparent; margin-bottom: 30px;">
+                    <div style="text-align: center; padding: 20px 0; background: transparent; margin-bottom: 20px;">
                         <div style="display: inline-flex; align-items: center; justify-content: center; gap: 20px; flex-wrap: wrap;">
                             <a href="/" alt="logo">
                                 <img src="{favicon_url}"
@@ -152,6 +152,14 @@ class MainView:
                                 </p>
                             </div>
                         </div>
+                    </div>
+
+                    <div style="text-align: center; margin: 20px 0 30px 0; padding: 20px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%); border-radius: 12px; border: 2px solid #667eea;">
+                        <a href="/help" target="_blank" style="display: inline-block; font-size: 1.1em; font-weight: 600; color: #667eea; text-decoration: none; padding: 12px 25px; background: white; border-radius: 25px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);"
+                           onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'; this.style.color='#764ba2';"
+                           onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(102, 126, 234, 0.2)'; this.style.color='#667eea';">
+                            📖 {self.utils.t("如何获取QQ音乐Cookie？查看完整使用教程", "How to get QQ Music Cookie? View complete tutorial")} →
+                        </a>
                     </div>
                     """)
             # 添加功能选择按钮
