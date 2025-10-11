@@ -13,7 +13,7 @@ Web:
 
   # Web Information
   Tab_Title: VideoCube - One-Click Batch Parser   # Web title | Web标题
-  Description: VideoCube - 专业的抖音/TikTok视频批量解析神器，一键下载无水印高清视频，简单快速，完全免费。    # Web description | Web描述
+  Description: 视频魔方 VideoCube - 免费在线解析抖音/TikTok无水印视频，支持QQ音乐下载，批量处理更高效。    # Web description | Web描述
   Favicon: https://i.imgur.com/LV8yVAX.png    # Web favicon | Web图标
 
   # Fun Configuration
