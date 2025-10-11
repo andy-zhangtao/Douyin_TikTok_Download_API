@@ -48,8 +48,8 @@ class MainView:
                 // 设置语言
                 $('html').attr('lang', 'zh-CN');
 
-                // 添加关键词
-                $('head').append('<meta name="keywords" content="抖音视频下载,TikTok视频下载,QQ音乐下载,无水印视频下载,视频解析,音乐下载,批量下载,VideoCube,抖音解析,TikTok解析,QQ音乐解析,视频批量处理,QQ音乐Cookie">');
+                // 添加关键词 - 优化后的精准关键词列表
+                $('head').append('<meta name="keywords" content="VideoCube,视频魔方,抖音无水印下载,TikTok视频解析,QQ音乐下载工具,在线视频批量下载,免费视频解析器">');
 
                 // 添加作者
                 $('head').append('<meta name="author" content="VideoCube Team">');
@@ -109,10 +109,8 @@ class MainView:
                         "抖音视频无水印下载",
                         "TikTok视频批量解析",
                         "QQ音乐高品质下载",
-                        "视频批量下载",
-                        "音乐批量下载",
-                        "高清视频提取",
-                        "Cookie使用教程"
+                        "在线视频批量处理",
+                        "免费视频解析工具"
                     ],
                     "screenshot": "{favicon_url}",
                     "aggregateRating": {{
